@@ -17,7 +17,7 @@ def file_read(my_path):
     alerts = {}
     cancellations = {}
 
-    with my_path.open() as file:
+    with my_path.open('r') as file:
         for line in file:
             line = line.strip()
 

@@ -56,7 +56,6 @@ def main() -> None:
     """Runs the simulation program in its entirety"""
     input_file_path = _read_input_file_path()
     lengths, devices, propagates, alerts, cancellations = file_read(input_file_path)
-    print(lengths, devices, propagates, alerts, cancellations)
     test = Simulation(lengths, devices, propagates, alerts, cancellations)
     test.run()
 

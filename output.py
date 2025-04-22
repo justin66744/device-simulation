@@ -21,8 +21,7 @@ class Simulation:
         curr_alert = []
         curr_props = []
         for dev_id, (desc, time) in self._alerts.items():
-            if int(time) == self._time:
-                curr_alert.append((dev_id, desc))
+            curr_alert.append((dev_id, desc))
 
         for dev_id, (propped_to, delay) in self._propagates.items():
             curr_props.append((dev_id, (propped_to, delay)))
@@ -30,26 +29,39 @@ class Simulation:
         for dev_id, desc in curr_alert:
             if dev_id in self._propagates.keys():
                 delay = self._propagates[dev_id][1]
-                new_time = self._time + int(delay)
-                self._time = new_time
+                new_time = self._time
 
-                if new_time < int(self._length):
-                    print(f"@{self._time}: #{dev_id} SENT ALERT TO #{self._propagates[dev_id][0]}: {desc}")
-                    print(f"@{new_time}: #{self._propagates[dev_id][0]} RECEIVED ALERT FROM #{dev_id}: {desc}")
-
-                while new_time < int(self._length):
+                while new_time < self._length:
                     for prop in curr_props:
                         new_time += int(prop[1][1])
-                        self._time = new_time
-                        if new_time < int(self._length):
+                        if new_time < self._length:
                             print(f"@{self._time}: #{prop[0]} SENT ALERT TO #{prop[1][0]}: {desc}")
                             print(f"@{new_time}: #{prop[1][0]} RECEIVED ALERT FROM #{prop[0]}: {desc}")
-
+                        self._time = new_time
 
 
 
     def prop_cancel(self):
-        pass
+        curr_cancel = []
+        curr_props = []
+        for dev_id, (desc, time) in self._cancellations.items():
+            curr_cancel.append((dev_id, desc))
+
+        for dev_id, (propped_to, delay) in self._propagates.items():
+            curr_props.append((dev_id, (propped_to, delay)))
+
+        for dev_id, desc in curr_cancel:
+            if dev_id in self._propagates.keys():
+                delay = self._propagates[dev_id][1]
+                new_time = self._time
+
+                while new_time < self._length:
+                    for prop in curr_props:
+                        new_time += int(prop[1][1])
+                        if new_time < self._length:
+                            print(f"@{self._time}: #{prop[0]} SENT CANCELLATION TO #{prop[1][0]}: {desc}")
+                            print(f"@{new_time}: #{prop[1][0]} RECEIVED CANCELLATION FROM #{prop[0]}: {desc}")
+                        self._time = new_time
 
 
 
@@ -66,16 +78,6 @@ class Simulation:
 
 
             self.prop_alert()
+            self.prop_cancel()
 
-        print(f"@{self._length}")
-
-
-
-
-
-
-
-
-
-
-
+        print(f"@{self._length}: END")

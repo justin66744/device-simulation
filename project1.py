@@ -1,4 +1,5 @@
 from pathlib import Path
+from output import Simulation
 
 
 def _read_input_file_path() -> Path:
@@ -20,29 +21,30 @@ def file_read(my_path):
     with my_path.open('r') as file:
         for line in file:
             line = line.strip()
+            if not line:
+                continue
+            pieces = line.split()
+            start = pieces[0]
 
-        pieces = line.split()
-        start = pieces[0]
-
-        if start == 'LENGTH' and len(pieces) == 2:
-            length = int(pieces[1])
-        elif start == 'DEVICE' and len(pieces) == 2:
-            devices.append(int(pieces[1]))
-        elif start == 'PROPAGATE' and len(pieces) == 4:
-            alerted = pieces[1]
-            propagated = pieces[2]
-            delay = pieces[3]
-            propagates[alerted] = (propagated, delay)
-        elif start == 'ALERT' and len(pieces) == 4:
-            dev_id = pieces[1]
-            description = pieces[2]
-            time = pieces[3]
-            alerts[dev_id] = (description, time)
-        elif start == 'CANCEL' and len(pieces) == 4:
-            dev_id = pieces[1]
-            description = pieces[2]
-            time = pieces[3]
-            cancellations[dev_id] = (description, time)
+            if start == 'LENGTH':
+                length = int(pieces[1])
+            elif start == 'DEVICE':
+                devices.append(int(pieces[1]))
+            elif start == 'PROPAGATE':
+                dev_id = pieces[1]
+                propagated = pieces[2]
+                delay = pieces[3]
+                propagates[dev_id] = (propagated, delay)
+            elif start == 'ALERT':
+                dev_id = pieces[1]
+                description = pieces[2]
+                time = pieces[3]
+                alerts[dev_id] = (description, time)
+            elif start == 'CANCEL':
+                dev_id = pieces[1]
+                description = pieces[2]
+                time = pieces[3]
+                cancellations[dev_id] = (description, time)
 
     return length, devices, propagates, alerts, cancellations
 
@@ -53,6 +55,10 @@ def file_read(my_path):
 def main() -> None:
     """Runs the simulation program in its entirety"""
     input_file_path = _read_input_file_path()
+    lengths, devices, propagates, alerts, cancellations = file_read(input_file_path)
+    print(lengths, devices, propagates, alerts, cancellations)
+    test = Simulation(lengths, devices, propagates, alerts, cancellations)
+    test.run()
 
 
 if __name__ == '__main__':

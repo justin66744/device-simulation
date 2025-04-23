@@ -1,6 +1,8 @@
 import os
+import sys
+import io
 import unittest
-from project1 import file_read
+from project1 import file_read, main
 import pathlib
 import tempfile
 
@@ -34,7 +36,16 @@ class TestProj1(unittest.TestCase):
                 os.unlink(temp_path)
 
     def test_file_with_invalid_file(self):
-        text = """LENGTH one hundred
-                  DEVICE one
-                  DEVICE two
-                  """
+        non_existent_path = "/invalid/path.txt"
+
+        original_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+
+        path = pathlib.Path(non_existent_path)
+        result = file_read(path)
+
+        output = sys.stdout.getvalue()
+        sys.stdout = original_stdout
+
+        self.assertIsNone(result)
+        self.assertEqual(output.strip(), "FILE NOT FOUND")

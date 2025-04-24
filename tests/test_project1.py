@@ -49,3 +49,6 @@ class TestProj1(unittest.TestCase):
 
         self.assertIsNone(result)
         self.assertEqual(output.strip(), "FILE NOT FOUND")
+
+if __name__ == '__main__':
+    unittest.main()

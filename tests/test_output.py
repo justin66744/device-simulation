@@ -1,8 +1,6 @@
 import unittest
 from output import Simulation
 import io
-import sys
-import tempfile
 import contextlib 
 
 class TestOutput(unittest.TestCase):

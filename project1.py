@@ -1,7 +1,7 @@
 from pathlib import Path
 from output import Simulation
 
-
+# Can't test without overriding input
 def _read_input_file_path() -> Path:
     """Reads the input file path from the standard input"""
     return Path(input())
@@ -51,7 +51,7 @@ def file_read(my_path):
 
 
 
-
+# Can't test without overriding input
 def main() -> None:
     """Runs the simulation program in its entirety"""
     input_file_path = _read_input_file_path()

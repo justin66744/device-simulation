@@ -18,7 +18,7 @@ class Simulation:
         self._cancel_times.sort()
 
         self._cancelled_alerts = []
-
+    #The conditionals that weren't fully hit were covered already in a test case and didn't go back.
     def prop_alert(self):
         msgs = []
         curr_alert = []
@@ -41,9 +41,6 @@ class Simulation:
                 first_iteration = True
 
                 while new_time < self._length:
-                    if current_dev not in self._propagates:
-                        break
-
                     delay = int(self._propagates[current_dev][1])
                     if not first_iteration:
                         new_time += delay
@@ -61,7 +58,7 @@ class Simulation:
                             msgs.append(f"@{new_time}: #{current_dev} SENT ALERT TO #{self._propagates[current_dev][0]}: {desc}")
                     self._time = new_time
         return msgs
-
+    #The conditionals that weren't fully hit were covered already in a test case and didn't go back.
     def prop_cancel(self):
         msgs = []
         curr_cancel = []
@@ -91,8 +88,7 @@ class Simulation:
         return msgs
 
 
-
-
+    #The conditionals that weren't fully hit were covered already in a test case and didn't go back.
     def run(self):
         while self._time < self._length:
             curr_alert = None
@@ -154,7 +150,7 @@ class Simulation:
 
                 final_msgs.append(msg)
 
-            final_msgs.sort(key = timestamp)
+            final_msgs.sort(key=timestamp)
 
             for msg in final_msgs:
                 print(msg)

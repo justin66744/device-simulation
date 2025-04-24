@@ -2,7 +2,7 @@ import os
 import sys
 import io
 import unittest
-from project1 import file_read, main
+from project1 import file_read
 import pathlib
 import tempfile
 

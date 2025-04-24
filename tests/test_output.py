@@ -51,7 +51,34 @@ class TestOutput(unittest.TestCase):
         self.assertIn('@300: #1 SENT CANCELLATION TO #2: test', output)
         self.assertIn('@400: #2 RECEIVED CANCELLATION FROM #1: test', output)
         self.assertIn('@1000: END', output)
-        
+
+    def test_empty_simulation_in_run(self):
+        test = Simulation(1000, [], {}, {}, {})
+
+        with io.StringIO() as vals, contextlib.redirect_stdout(vals):
+            test.run()
+            output = vals.getvalue().strip()
+
+        self.assertEqual('@1000: END', output)
+
+    def test_multiple_alerts(self):
+        devices = [1, 2, 3]
+        propagates = {'1': ('2', '50'), '2': ('3', '50'), '3': ('1', '50')}
+        alerts = {'1': ('alert_from_1', '100'), '2': ('alert_from_2', '200')}
+        cancellations = {}
+
+        test = Simulation(500, devices, propagates, alerts, cancellations)
+
+        with io.StringIO() as vals, contextlib.redirect_stdout(vals):
+            test.run()
+            output = vals.getvalue()
+
+        self.assertIn('@100: #1 SENT ALERT TO #2: alert_from_1', output)
+        self.assertIn('@150: #2 RECEIVED ALERT FROM #1: alert_from_1', output)
+        self.assertIn('@200: #2 SENT ALERT TO #3: alert_from_2', output)
+        self.assertIn('@250: #3 RECEIVED ALERT FROM #2: alert_from_2', output)
+        self.assertIn('@500: END', output)
+
 
 
 if __name__ == '__main__':

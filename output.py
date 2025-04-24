@@ -31,16 +31,23 @@ class Simulation:
 
         for dev_id, (desc, time) in curr_alert:
             self._time = int(time)
+            msgs.append(f"@{self._time}: #{dev_id} SENT ALERT TO #{self._propagates[dev_id][0]}: {desc}")
+
             if dev_id in self._propagates.keys():
                 delay = self._propagates[dev_id][1]
-                new_time = self._time
+                new_time = self._time + int(delay)
+
+                if new_time < self._length:
+                    msgs.append(f"@{new_time}: #{self._propagates[dev_id][0]} RECEIVED ALERT FROM #{dev_id}: {desc}")
 
                 while new_time < self._length:
                     for prop in curr_props:
                         new_time += int(prop[1][1])
                         if new_time < self._length:
-                            msgs.append(f"@{self._time}: #{prop[0]} SENT ALERT TO #{prop[1][0]}: {desc}")
-                            msgs.append(f"@{new_time}: #{prop[1][0]} RECEIVED ALERT FROM #{prop[0]}: {desc}")
+                            msgs.append(
+                                f"@{self._time}: #{prop[0]} SENT ALERT TO #{prop[1][0]}: {desc}")
+                            msgs.append(
+                                f"@{new_time}: #{prop[1][0]} RECEIVED ALERT FROM #{prop[0]}: {desc}")
                         self._time = new_time
         return msgs
 

@@ -23,6 +23,7 @@ class Simulation:
         msgs = []
         curr_alert = []
         curr_props = []
+
         for dev_id, (desc, time) in self._alerts.items():
             curr_alert.append((dev_id, (desc, time)))
 
@@ -31,27 +32,35 @@ class Simulation:
 
         for dev_id, (desc, time) in curr_alert:
             self._time = int(time)
-            msgs.append(f"@{self._time}: #{dev_id} SENT ALERT TO #{self._propagates[dev_id][0]}: {desc}")
-
             if dev_id in self._propagates.keys():
-                delay = self._propagates[dev_id][1]
-                new_time = self._time + int(delay)
+                target_dev = self._propagates[dev_id][0]
+                msgs.append(f"@{self._time}: #{dev_id} SENT ALERT TO #{target_dev}: {desc}")
 
-                if new_time < self._length:
-                    msgs.append(f"@{new_time}: #{self._propagates[dev_id][0]} RECEIVED ALERT FROM #{dev_id}: {desc}")
+                current_dev = dev_id
+                new_time = self._time
+                first_iteration = True
 
                 while new_time < self._length:
-                    for prop in curr_props:
-                        new_time += int(prop[1][1])
+                    if current_dev not in self._propagates:
+                        break
+
+                    delay = int(self._propagates[current_dev][1])
+                    if not first_iteration:
+                        new_time += delay
                         if new_time < self._length:
-                            msgs.append(
-                                f"@{self._time}: #{prop[0]} SENT ALERT TO #{prop[1][0]}: {desc}")
-                            msgs.append(
-                                f"@{new_time}: #{prop[1][0]} RECEIVED ALERT FROM #{prop[0]}: {desc}")
-                        self._time = new_time
+                            msgs.append(f"@{new_time}: #{self._propagates[current_dev][0]} RECEIVED ALERT FROM #{current_dev}: {desc}")
+                    else:
+                        first_iteration = False
+                        new_time += delay
+                        if new_time < self._length:
+                            msgs.append(f"@{new_time}: #{target_dev} RECEIVED ALERT FROM #{dev_id}: {desc}")
+
+                    if new_time < self._length:
+                        current_dev = self._propagates[current_dev][0]
+                        if current_dev in self._propagates:
+                            msgs.append(f"@{new_time}: #{current_dev} SENT ALERT TO #{self._propagates[current_dev][0]}: {desc}")
+                    self._time = new_time
         return msgs
-
-
 
     def prop_cancel(self):
         msgs = []

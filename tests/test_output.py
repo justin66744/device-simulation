@@ -78,6 +78,42 @@ class TestOutput(unittest.TestCase):
         self.assertIn('@500: END', output)
 
 
+    def test_multiple_cancel(self):
+        devices = [1, 2, 3]
+        propagates = {'1': ('2', '50'), '2': ('3', '50'), '3': ('1', '50')}
+        alerts = {'1': ('alert', '100'), '2': ('alert2', '150')}
+        cancellations = {'1': ('alert', '150'), '2': ('alert2', '200')}
+
+        test = Simulation(500, devices, propagates, alerts, cancellations)
+
+        with io.StringIO() as vals, contextlib.redirect_stdout(vals):
+            test.run()
+            output = vals.getvalue()
+
+        self.assertIn('@150: #1 SENT CANCELLATION TO #2: alert', output)
+        self.assertIn('@200: #2 RECEIVED CANCELLATION FROM #1: alert', output)
+        self.assertIn('@200: #2 SENT CANCELLATION TO #3: alert2', output)
+        self.assertIn('@250: #3 RECEIVED CANCELLATION FROM #2: alert2', output)
+
+    # def test_alert_and_cancel_at_same_time(self):
+    #     devices = [1, 2]
+    #     propagates = {'1': ('2', '50')}
+    #     alerts = {'1': ('alert', '100')}
+    #     cancellations = {'1': ('alert', '100')}
+    #
+    #     test = Simulation(300, devices, propagates, alerts, cancellations)
+    #
+    #     with io.StringIO() as vals, contextlib.redirect_stdout(vals):
+    #         test.run()
+    #         output = vals.getvalue()
+    #
+    #     self.assertIn('@100: #1 SENT ALERT TO #2: alert', output)
+    #     self.assertIn('@100: #1 SENT CANCELLATION TO #2: alert', output)
+    #     self.assertIn('@150: #2 RECEIVED ALERT FROM #1: alert', output)
+    #     self.assertIn('@150: #2 RECEIVED CANCELLATION FROM #1: alert', output)
+    #     self.assertIn('@300: END', output)
+
+
 
 if __name__ == '__main__':
     unittest.main()

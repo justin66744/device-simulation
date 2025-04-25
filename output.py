@@ -61,30 +61,41 @@ class Simulation:
     #The conditionals that weren't fully hit were covered already in a test case and didn't go back.
     def prop_cancel(self):
         msgs = []
-        curr_cancel = []
-        curr_props = []
+        cancellation_chains = {}
+
         for dev_id, (desc, time) in self._cancellations.items():
-            curr_cancel.append((dev_id, (desc, time)))
+            if desc not in cancellation_chains:
+                cancellation_chains[desc] = {'devices': set(), 'completed': False}
 
-        for dev_id, (propped_to, delay) in self._propagates.items():
-            curr_props.append((dev_id, (propped_to, delay)))
+            current_dev = dev_id
+            new_time = int(time)
+            first_iteration = True
 
-        for dev_id, (desc, time) in curr_cancel:
-            self._time = int(time)
-            if dev_id in self._propagates.keys():
-                delay = self._propagates[dev_id][1]
-                new_time = self._time
+            while not cancellation_chains[desc]['completed'] and new_time < self._length:
+                target_dev = self._propagates[current_dev][0]
+                delay = int(self._propagates[current_dev][1])
 
-                while new_time < self._length:
-                    if len(curr_props) == len(self._cancelled_alerts):
-                        break
-                    for prop in curr_props:
-                        new_time += int(prop[1][1])
-                        if new_time < self._length:
-                            msgs.append(f"@{self._time}: #{prop[0]} SENT CANCELLATION TO #{prop[1][0]}: {desc}")
-                            msgs.append(f"@{new_time}: #{prop[1][0]} RECEIVED CANCELLATION FROM #{prop[0]}: {desc}")
-                        self._time = new_time
-                        self._cancelled_alerts.append(prop)
+                cancellation_chains[desc]['devices'].add(current_dev)
+
+                if first_iteration:
+                    msgs.append(f"@{new_time}: #{current_dev} SENT CANCELLATION TO #{target_dev}: {desc}")
+                    first_iteration = False
+                else:
+                    msgs.append(f"@{new_time}: #{current_dev} SENT CANCELLATION TO #{target_dev}: {desc}")
+
+                new_time += delay
+                if new_time < self._length:
+                    msgs.append(
+                        f"@{new_time}: #{target_dev} RECEIVED CANCELLATION FROM #{current_dev}: {desc}")
+
+                if target_dev in cancellation_chains[desc]['devices']:
+                    cancellation_chains[desc]['completed'] = True
+                    for alert_dev, (alert_desc, alert_time) in self._alerts.items():
+                        if alert_desc == desc:
+                            self._cancelled_alerts.append((alert_dev, alert_desc))
+
+                current_dev = target_dev
+
         return msgs
 
 
@@ -139,13 +150,13 @@ class Simulation:
                         from_dev = pieces[1][1:]
                         to_dev = pieces[5][1:]
                         if (from_dev, to_dev) in sent_cancellations:
-                            if time >= sent_cancellations[(from_dev, to_dev)]:
+                            if time > sent_cancellations[(from_dev, to_dev)]:
                                 continue
                     elif 'RECEIVED' in msg:
                         to_dev = pieces[1][1:]
                         from_dev = pieces[5][1:]
                         if (to_dev, from_dev) in received_cancellations:
-                            if time >= received_cancellations[(to_dev, from_dev)]:
+                            if time > received_cancellations[(to_dev, from_dev)]:
                                 continue
 
                 final_msgs.append(msg)
